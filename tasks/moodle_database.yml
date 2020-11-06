@@ -1,0 +1,29 @@
+---
+- name: Create mysql {{ moodle_db_user }} user
+  mysql_user:
+    name: web
+    state: present
+    password: "{{ moodle_db_password }}"
+    encrypted: "{{ moodle_db_password_encrypted }}"
+    priv: '*.*:ALL,GRANT'
+    host: "{{ moodle_ip }}"
+
+- name: restart mariadb service
+  systemd:
+    name: mariadb
+    state: restarted
+
+- name: Set mysql variables pt 1
+  mysql_variables:
+    variable: innodb_file_format
+    value: Barracuda
+  
+- name: Set mysql variables pt 2
+  mysql_variables:
+    variable: innodb_file_per_table
+    value: 1
+  
+- name: Set mysql variables pt 3
+  mysql_variables:
+    variable: innodb_large_prefix
+    value: 1

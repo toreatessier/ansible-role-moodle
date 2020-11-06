@@ -1,0 +1,8 @@
+---
+- name: Install dependancies
+  yum: 
+    name: ['php7.0', 'php7.0-curl', 'php-mysql', 'php-zip', 'php-gd', 'php-intl',
+           'php-soap', 'php-xmlrpc', 'php-intl', 'php-xml', 'git', 'apache2'
+           'python3-pymysql', 'python-mysqldb']
+    update_cache: yes
+    state: present

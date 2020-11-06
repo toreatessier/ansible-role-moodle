@@ -1,0 +1,99 @@
+---
+# Variable setup
+- name: Include OS-Specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+# Setup task depending on the OS
+- include_tasks: RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- include_tasks: moodle_database.yml
+  when: database_init == 'true'
+
+- name: Download moodle latest release
+  git:
+    repo: "{{ moodle_repo_url }}"
+    dest: "{{ moodle_path }}"
+    version: "{{ moodle_version }}"
+
+- name: Change owner and rights on moodle dir
+  file:
+    path: "{{ moodle_path }}"
+    owner: root
+    group: root
+    mode: 0775
+    recurse: yes
+
+- name: Create moodledata dir
+  file:
+    state: directory
+    path: "{{ moodledata_path }}"
+    mode: 0777
+
+- name: Update apache2 000-default.conf
+  copy:
+    src: "{{ role_path }}/files/000-default.conf"
+    dest: "{{ apache2_path }}/sites-available/000-default.conf"
+
+- name: Update php.ini
+  copy:
+    src: "{{ role_path }}/files/php.ini"
+    dest: "{{ php_path }}/7.0/cli/php.ini"
+
+- name: Restart apache2 service
+  systemd:
+    name: apache2
+    state: restarted
+
+- name: Configure moodle main node
+  command: /usr/bin/php /var/www/moodle/admin/cli/install.php
+    --lang="{{ moodle_language }}"
+    --wwwroot="{{ moodle_webroot }}"
+    --dataroot="{{ moodledata_path }}"
+    --dbtype="{{ moodle_db_type }}"
+    --dbhost="{{ moodle_db_ip }}"
+    --dbname="{{ moodle_db_name }}"
+    --dbuser="{{ moodle_db_user }}"
+    --dbpass="{{ moodle_db_password }}"
+    --adminuser="{{ moodle_admin_user }}"
+    --adminpass="{{ moodle_admin_password }}"
+    --fullname="{{ moodle_fullname }}"
+    --shortname="{{ moodle_shortname }}"
+    --non-interactive
+    --allow-unstable
+    --agree-license
+  when: moodle_node_no!=1
+
+- name: Configure moodle alternative node
+  command: /usr/bin/php /var/www/moodle/admin/cli/install.php
+    --lang="{{ moodle_language }}"
+    --wwwroot="{{ moodle_webroot }}"
+    --dataroot="{{ moodledata_path }}"
+    --dbtype="{{ moodle_db_type }}"
+    --dbhost="{{ moodle_db_ip }}""
+    --dbname="{{ moodle_db_name }}"
+    --dbuser="{{ moodle_db_user }}"
+    --dbpass="{{ moodle_db_password }}"
+    --adminuser="{{ moodle_admin_user }}"
+    --adminpass="{{ moodle_admin_password }}"
+    --fullname="{{ moodle_fullname }}"
+    --shortname="{{ moodle_shortname }}"
+    --non-interactive
+    --allow-unstable
+    --agree-license
+    --skip-database
+  when: moodle_node_no!=1
+
+- name: Restart apache2 service
+  systemd:
+    name: apache2
+    state: restarted
+
+- name: Change moodle dir owner again
+  file:
+    path: "{{ moodle_path }}"
+    owner: "{{ moodle_owner }}"
+    recurse: yes

@@ -1,0 +1,23 @@
+---
+# defaults file for ansible-role-moodle/
+apache2_path: /etc/apache2
+moodledata_path: /var/www/moodledata
+moodle_path: /var/www/moodle
+moodle_repo_url: https://github.com/moodle/moodle
+moodle_version: MOODLE_36_STABLE
+php_path: /etc/php
+moodle_owner: www-data
+moodle_webroot: http://moodle.com/
+moodle_db_type: mariadb
+moodle_db_ip: 127.0.0.1
+moodle_db_name: db
+moodle_db_user: web
+moodle_db_password: password
+moodle_db_paswword_encrypted: no
+moodle_admin_user: admin
+moodle_admin_password: paswword
+moodle_fullname: moodle
+moodle_shortname: moodle
+moodle_language: fr
+moodle_ip: 127.0.0.1
+database_init: true
